@@ -33,10 +33,11 @@
             background-color: var(--background-body); 
             color: var(--text-color); 
             margin: 0; 
-            padding: 20px; 
+            padding: 15px; /* Menor padding base para celulares */
             line-height: 1.6;
         }
         .container { 
+            width: 100%;
             max-width: 900px; 
             margin: 0 auto; 
         }
@@ -47,21 +48,23 @@
             margin-bottom: 30px;
         }
         .brand-logo {
-            max-width: 280px;
+            width: 100%;
+            max-width: 250px;
             height: auto;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .brand-header h1 { 
             color: var(--secondary-color); 
             margin-bottom: 5px; 
-            font-size: 2rem;
+            font-size: clamp(1.4rem, 5vw, 2rem); /* Texto fluido responsivo */
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            flex-wrap: wrap; /* Permitir que el texto baje de línea en móviles */
+            gap: 5px 10px;
         }
         .brand-header h1 span { color: var(--primary-color); }
-        .brand-header p { color: #666; margin-top: 0; }
+        .brand-header p { color: #666; margin-top: 0; font-size: 0.95rem; }
 
         /* Contenedores Principales */
         .card-surface { 
@@ -81,7 +84,7 @@
             flex-wrap: wrap; 
         }
         .tab-button { 
-            flex: 1; 
+            flex: 1 1 100%; /* Toma todo el ancho en móviles por defecto */
             padding: 15px; 
             border: 1px solid var(--border-color); 
             background-color: var(--surface-color); 
@@ -90,8 +93,8 @@
             font-weight: 600; 
             transition: background-color 0.3s, color 0.3s, box-shadow 0.3s; 
             font-size: 1rem; 
-            color: #555; 
-            min-width: 200px;
+            color: #555;
+            text-align: center;
         }
         .tab-button:hover { background-color: #f8f9fa; }
         .tab-button.is-active { 
@@ -179,15 +182,17 @@
         }
         .modal-content {
             background-color: var(--surface-color);
-            padding: 30px;
+            padding: 25px 20px; /* Padding adaptable */
             border-radius: 16px;
-            width: 90%;
+            width: 95%; /* Toma casi todo el ancho de celulares pequeños */
             max-width: 450px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transform: translateY(20px);
             transition: transform 0.3s;
             position: relative;
+            max-height: 95vh;
+            overflow-y: auto; /* Scroll si la pantalla es muy chaparra */
         }
         .modal.is-open .modal-content { transform: translateY(0); }
         
@@ -203,14 +208,27 @@
         /* Contenedor Render QR */
         .qr-canvas-container {
             background-color: var(--surface-color);
-            padding: 20px;
-            display: inline-block; 
-            margin: 20px auto;
+            padding: 10px; /* Menor relleno para dejarle espacio a la img */
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            margin: 15px auto;
             border: 1px solid #eeeeee;
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            min-height: 250px;
-            min-width: 250px;
+            width: 100%; 
+            max-width: 270px; /* Limite nativo */
+            aspect-ratio: 1/1; /* Siempre cuadrado! */
+            overflow: hidden; /* Cortar cualquier desboramiento */
+        }
+        
+        /* Auto Scaling del lienzo QR */
+        .qr-canvas-container canvas, .qr-canvas-container svg {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 250px;
+            max-height: 250px;
+            object-fit: contain;
         }
 
         .url-feedback-box {
@@ -247,10 +265,17 @@
             font-weight: 500; 
         }
 
-        /* Responsive Layouts */
+        /* Responsive Layouts - Breakpoints Móviles a Desktop */
+        @media(min-width: 576px) {
+            .tab-button { flex: 1 1 0%; } /* Vuelven a ponerse lado a lado en tablets chicas */
+            .card-surface { padding: 30px; }
+            .modal-content { padding: 30px; width: 90%; }
+        }
+
         @media(min-width: 768px) {
             body { padding: 40px; }
             .form-grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .brand-logo { max-width: 280px; margin-bottom: 10px; }
         }
     </style>
 </head>
