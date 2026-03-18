@@ -298,18 +298,18 @@
 <aside class="modal" id="qrPreviewModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
     <div class="modal-content">
         <button type="button" class="modal-btn-close" id="btnCloseModal" aria-label="Cerrar ventana">×</button>
-        <h3 id="modalTitle" style="color: var(--secondary-color); margin-top: 0;">Inspección Promocional</h3>
+        <h3 id="modalTitle" style="color: var(--brand-secondary); margin-top: 0;">¡Tu Cupón está listo!</h3>
         
         <div class="qr-canvas-container" id="qrDomContainer">
             <!-- Render Target para SVG -->
         </div>
 
-        <div class="url-feedback-box" id="textUrlFeedback">
-            Calculando ruta de destino...
+        <div class="url-feedback-box" id="textUrlFeedback" style="font-size: 1rem; font-weight: 700; color: var(--brand-secondary); letter-spacing: 0.03em;">
+            &mdash;
         </div>
         
         <button type="button" id="btnDownloadSingle" class="btn btn-primary">
-            Descargar Imagen (PNG)
+            Descargar imagen
         </button>
     </div>
 </aside>
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalUrl = createSafeDeepLink(inputBaseUrl.value, payload);
         
         qrPreviewInstance.update({ data: finalUrl });
-        textFeedback.innerText = finalUrl;
+        textFeedback.innerText = `ID: ${inputID.value.trim()}`;
         
         openModal();
     });
