@@ -6,9 +6,7 @@
     <meta name="description" content="Generador masivo de códigos QR para enlaces profundos promocionales.">
     <title>Generador QR - Farmacias del Ahorro</title>
     
-    <!-- Librerías con carga diferida (Mejor rendimiento) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js" defer></script>
+    <!-- Librería para Código QR -->
     <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js" defer></script>
     
     <style>
@@ -76,41 +74,7 @@
             border-top: 4px solid var(--secondary-color);
         }
 
-        /* Navegación CSS Tabs */
-        .tab-navigation { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap; 
-        }
-        .tab-button { 
-            flex: 1 1 100%; /* Toma todo el ancho en móviles por defecto */
-            padding: 15px; 
-            border: 1px solid var(--border-color); 
-            background-color: var(--surface-color); 
-            border-radius: var(--border-radius); 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s; 
-            font-size: 1rem; 
-            color: #555;
-            text-align: center;
-        }
-        .tab-button:hover { background-color: #f8f9fa; }
-        .tab-button.is-active { 
-            background-color: var(--secondary-color); 
-            color: white; 
-            border-color: var(--secondary-color);
-            box-shadow: 0 4px 12px rgba(44, 60, 143, 0.2);
-        }
-        
-        .tab-panel { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .tab-panel.is-active { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
 
         /* Formularios y Grids */
         .form-grid { 
@@ -242,32 +206,8 @@
             border: 1px dashed #cccccc;
         }
 
-        /* Componente UI de Progreso */
-        .progress-container { 
-            height: 12px; 
-            background-color: #e2e8f0; 
-            border-radius: 6px; 
-            margin-top: 25px; 
-            overflow: hidden; 
-            display: none; 
-        }
-        .progress-bar { 
-            height: 100%; 
-            background-color: var(--secondary-color); 
-            width: 0%; 
-            transition: width 0.1s linear; 
-        }
-        .status-message { 
-            font-size: 0.9em; 
-            color: var(--secondary-color); 
-            margin-top: 10px; 
-            text-align: center; 
-            font-weight: 500; 
-        }
-
         /* Responsive Layouts - Breakpoints Móviles a Desktop */
         @media(min-width: 576px) {
-            .tab-button { flex: 1 1 0%; } /* Vuelven a ponerse lado a lado en tablets chicas */
             .card-surface { padding: 30px; }
             .modal-content { padding: 30px; width: 90%; }
         }
@@ -288,18 +228,7 @@
         <p>Herramienta Corporativa de Deeplinks (Batch & Individual)</p>
     </header>
     
-    <!-- Controles de Pestañas -->
-    <nav class="tab-navigation" aria-label="Navegación de Modos">
-        <button type="button" class="tab-button is-active" data-target="tab-prueba" aria-controls="tab-prueba" aria-selected="true">
-            Generar QR Individual
-        </button>
-        <button type="button" class="tab-button" data-target="tab-lote" aria-controls="tab-lote" aria-selected="false">
-            Generar Lote desde CSV
-        </button>
-    </nav>
-
-    <!-- PANEL: MODO PRUEBA -->
-    <section id="tab-prueba" class="card-surface tab-panel is-active" role="tabpanel">
+    <section class="card-surface">
         <h2 style="color: var(--secondary-color); font-size: 1.2rem; margin-top:0;">¡Agrega tu ID multifuncional para generar tu QR!</h2>
         
         <form id="formRevisarUrl" onsubmit="event.preventDefault();" class="form-grid">
@@ -312,6 +241,16 @@
                 <label for="inputTestID">MultifuncionalID <span style="color:var(--primary-color);">*</span></label>
                 <input type="text" id="inputTestID" class="form-control" placeholder="Ej: 12345" required minlength="3">
             </div>
+
+            <div class="form-group captcha-group" style="margin-top: 15px; background: #fdfdfd; padding: 15px; border: 1px dashed var(--border-color); border-radius: var(--border-radius);">
+                <label for="inputCaptchaTest">Verificación de Seguridad <span style="color:var(--primary-color);">*</span></label>
+                <p style="font-size: 0.85em; color: #666; margin-top: 0; margin-bottom: 10px;">Resuelve la operación para habilitar la generación:</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="textCaptchaTest" style="font-size: 1.2rem; font-weight: bold; background: #e2e8f0; padding: 8px 12px; border-radius: 6px; letter-spacing: 2px;">?</span>
+                    <span style="font-size: 1.2rem; font-weight: bold;">=</span>
+                    <input type="number" id="inputCaptchaTest" class="form-control" style="width: 100px;" placeholder="Total" required>
+                </div>
+            </div>
             
             <button type="button" id="btnOpenPreview" class="btn btn-primary" style="margin-top: 20px;" disabled>
                 Generar cupón QR
@@ -319,45 +258,7 @@
         </form>
     </section>
 
-    <!-- PANEL: MODO LOTE -->
-    <section id="tab-lote" class="card-surface tab-panel" role="tabpanel" hidden>
-        <h2 style="color: var(--secondary-color); font-size: 1.2rem; margin-top:0;">Procesamiento Masivo</h2>
-        
-        <form id="formProcesoMasivo" onsubmit="event.preventDefault();" class="form-grid">
-            <div class="form-group" style="display: none;">
-                <label for="inputBatchBaseUrl">1. URL Base (Aplica a todas las filas)</label>
-                <input type="url" id="inputBatchBaseUrl" class="form-control" value="https://www.fahorro.com/catalogo-extendido/catalogo-extendido-lo-mas-vendido.html" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label for="inputCsvFile">1. Importar Archivo CSV</label>
-                <p style="font-size:0.8em; color:#666; margin-top:-5px; margin-bottom: 8px;">* Cabecera requerida: <code>MultifuncionalID</code></p>
-                <input type="file" id="inputCsvFile" class="form-control" accept=".csv" style="padding: 9px; background: white;" required>
-            </div>
-            
-            <fieldset class="form-grid-2-cols" style="border:none; padding:0; margin:0;">
-                <legend class="visually-hidden" style="display:none;">Rango de ejecución</legend>
-                <div class="form-group">
-                    <label for="inputStartRow">Fila Inicial</label>
-                    <input type="number" id="inputStartRow" class="form-control" value="1" min="1" step="1">
-                </div>
-                <div class="form-group">
-                    <label for="inputEndRow">Fila Final</label>
-                    <input type="number" id="inputEndRow" class="form-control" value="1000" min="1" step="1">
-                </div>
-            </fieldset>
-            
-            <button type="button" id="btnExecuteBatch" class="btn btn-primary" style="margin-top: 10px;">
-                Generar Paquete ZIP
-            </button>
-        </form>
 
-        <!-- Indicador de Carga -->
-        <div class="progress-container" id="uiProgressContainer" aria-hidden="true">
-            <div class="progress-bar" id="uiProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-        <div id="uiStatusMessage" class="status-message" aria-live="polite">Esperando archivo para procesar...</div>
-    </section>
 </main>
 
 <!-- MODAL EMERGENTE -->
@@ -384,34 +285,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    /** 
-     * MANEJO DE ESTADO UI: Pestañas (Tabs)
-     */
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabPanels = document.querySelectorAll('.tab-panel');
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetId = button.getAttribute('data-target');
-            
-            // Resetear estados
-            tabButtons.forEach(btn => {
-                btn.classList.remove('is-active');
-                btn.setAttribute('aria-selected', 'false');
-            });
-            tabPanels.forEach(panel => {
-                panel.classList.remove('is-active');
-                panel.setAttribute('hidden', '');
-            });
-
-            // Activar selecciones
-            button.classList.add('is-active');
-            button.setAttribute('aria-selected', 'true');
-            const targetPanel = document.getElementById(targetId);
-            targetPanel.classList.add('is-active');
-            targetPanel.removeAttribute('hidden');
-        });
-    });
 
     /** 
      * MANEJO DE ESTADO UI: Ventana Modal
@@ -437,24 +311,16 @@ document.addEventListener('DOMContentLoaded', () => {
     /** 
      * DOM ELEMENTS - CACHÉ LÓGICO
      */
-    // Entradas Prueba
+    // Entradas UI
     const inputBaseUrl = document.getElementById('inputTestBaseUrl');
     const inputID = document.getElementById('inputTestID');
     const textFeedback = document.getElementById('textUrlFeedback');
-    
-    // Entradas Lote
-    const inputBatchUrl = document.getElementById('inputBatchBaseUrl');
-    const inputFile = document.getElementById('inputCsvFile');
-    const inputStart = document.getElementById('inputStartRow');
-    const inputEnd = document.getElementById('inputEndRow');
-    const uiProgressLoader = document.getElementById('uiProgressContainer');
-    const uiProgressBar = document.getElementById('uiProgressBar');
-    const uiStatus = document.getElementById('uiStatusMessage');
+    const inputCaptchaTest = document.getElementById('inputCaptchaTest');
+    const textCaptchaTest = document.getElementById('textCaptchaTest');
 
     // Botones Acción Principal
     const btnPreview = document.getElementById('btnOpenPreview');
     const btnDownload = document.getElementById('btnDownloadSingle');
-    const btnBatch = document.getElementById('btnExecuteBatch');
 
     /**
      * CONFIGURACIÓN E INSTANCIAS QR (Librería Externa)
@@ -478,15 +344,13 @@ document.addEventListener('DOMContentLoaded', () => {
         cornersDotOptions: { color: brandColors.primary, type: "square" } // Centro rojo
     };
 
-    // Instancia para Modal (Tamaño UI: 250px)
+    // Instancia para Modal
     let qrPreviewInstance = null;
-    let qrBatchInstance = null;
 
-    // Inicialización Retardada para asegurar librerías cargadas (defer attribute sync)
+    // Inicialización Retardada para evitar parpadeos
     const initQrEngines = () => {
         if (typeof QRCodeStyling !== "undefined") {
             qrPreviewInstance = new QRCodeStyling({ ...qrBaseSettings, width: 250, height: 250 });
-            qrBatchInstance = new QRCodeStyling({ ...qrBaseSettings, width: 400, height: 400 });
             qrPreviewInstance.append(document.getElementById('qrDomContainer'));
         } else {
             console.error("Librería QRCodeStyling no disponible.");
@@ -523,19 +387,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * EVENTO: Validar ID y habilitar/deshabilitar botón principal Pestaña Prueba
+     * LÓGICA CAPTCHA MATEMÁTICO
      */
-    inputID.addEventListener('input', () => {
-        // Habilitar si tiene 3 caracteres o más sin contar espacios
-        if (inputID.value.trim().length >= 3) {
-            btnPreview.disabled = false;
+    let captchaAnswer = 0;
+    
+    const generateCaptcha = (textEl) => {
+        const num1 = Math.floor(Math.random() * 10) + 1;
+        const num2 = Math.floor(Math.random() * 10) + 1;
+        const op = Math.random() > 0.5 ? '+' : '-';
+        if (op === '-' && num1 < num2) {
+            textEl.innerText = `${num2} - ${num1}`;
+            captchaAnswer = num2 - num1;
         } else {
-            btnPreview.disabled = true;
+            textEl.innerText = `${num1} ${op} ${num2}`;
+            captchaAnswer = op === '+' ? num1 + num2 : num1 - num2;
         }
-    });
+    };
+    
+    // Inicializar valores de seguridad en UI
+    generateCaptcha(textCaptchaTest);
 
     /**
-     * EVENTO: Generar Prueba Singular
+     * EVENTO: Validar UI y habilitar botones si Captcha y Datos son correctos
+     */
+    const validateTestUI = () => {
+        const isValidId = inputID.value.trim().length >= 3;
+        const isValidCaptcha = parseInt(inputCaptchaTest.value, 10) === captchaAnswer;
+        btnPreview.disabled = !(isValidId && isValidCaptcha);
+    };
+    
+    inputID.addEventListener('input', validateTestUI);
+    inputCaptchaTest.addEventListener('input', validateTestUI);
+
+    /**
+     * EVENTO: Generar Singular
      */
     btnPreview.addEventListener('click', () => {
         if (!qrPreviewInstance) return;
@@ -573,118 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /**
-     * EVENTO: Generar y Empaquetar Lote Masivo
-     */
-    btnBatch.addEventListener('click', async () => {
-        const file = inputFile.files[0];
-        const startIdx = parseInt(inputStart.value, 10) - 1;
-        const endIdx = parseInt(inputEnd.value, 10);
-        
-        // Validación temprana
-        if (!file || file.type !== "text/csv" && !file.name.endsWith('.csv')) {
-            return alert("Por favor selecciona un archivo con extensión .CSV válido.");
-        }
-        if (isNaN(startIdx) || isNaN(endIdx) || startIdx < 0 || endIdx <= startIdx) {
-            return alert("Las filas inicial y final deben ser números secuenciales coherentes.");
-        }
-        if (!qrBatchInstance || typeof Papa === "undefined" || typeof JSZip === "undefined") {
-            return alert("Dependencias no inicializadas. Permite que la página cargue por completo.");
-        }
 
-        // Bloqueo de UI para prevenir concurrencia
-        btnBatch.disabled = true;
-        uiProgressLoader.style.display = 'block';
-        uiProgressBar.style.width = "0%";
-        uiProgressBar.setAttribute('aria-valuenow', 0);
-        uiStatus.style.color = brandColors.secondary;
-        uiStatus.innerText = "Parseando documento CSV...";
-
-        const zipArchive = new JSZip();
-        const baseRouteUrl = inputBatchUrl.value;
-
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            error: function(err) {
-                alert("Ocurrió un error leyendo el CSV: " + err.message);
-                btnBatch.disabled = false;
-                uiProgressLoader.style.display = 'none';
-            },
-            complete: async function(results) {
-                try {
-                    const rowData = results.data.slice(startIdx, endIdx);
-                    const totalElements = rowData.length;
-
-                    if (totalElements === 0) {
-                        btnBatch.disabled = false;
-                        uiProgressLoader.style.display = 'none';
-                        return alert("No hay datos encontrados en el rango de filas definido.");
-                    }
-                    
-                    uiStatus.innerText = `Generando mosaicos... (0 de ${totalElements})`;
-
-                    for (let i = 0; i < totalElements; i++) {
-                        const rowPayload = {
-                            cupon: "Cupon50%", // Fijo
-                            multifuncionalID: rowData[i].MultifuncionalID || rowData[i].ID || ''
-                        };
-
-                        if (!rowPayload.multifuncionalID) continue; // Saltar si está vacío
-
-                        const iterationUrl = createSafeDeepLink(baseRouteUrl, rowPayload);
-                        
-                        qrBatchInstance.update({ data: iterationUrl });
-                        // Promesa de retraso natural para evitar cuelgues de JS event loop
-                        await new Promise(resolve => setTimeout(resolve, 35)); 
-                        
-                        const pngBlob = await qrBatchInstance.getRawData("png");
-                        
-                        // Limpieza de nombre archivo final
-                        const cleanId = (rowPayload.multifuncionalID || i).toString().trim().replace(/[^a-zA-Z0-9-]/g, '_');
-                        const archiveFilename = `Ahorro_${cleanId}.png`;
-                        
-                        zipArchive.file(archiveFilename, pngBlob);
-
-                        // Optimización en actualización UI
-                        if (i % 5 === 0 || i === totalElements - 1) {
-                            const progPercentage = Math.round(((i + 1) / totalElements) * 100);
-                            uiProgressBar.style.width = progPercentage + "%";
-                            uiProgressBar.setAttribute('aria-valuenow', progPercentage);
-                            uiStatus.innerText = `Procesando: ${i + 1} de ${totalElements}`;
-                        }
-                    }
-
-                    uiStatus.innerText = "Proceso de renderizado terminado. Comprimiento ZIP...";
-                    // STORE usado para maximizar velocidad en blobs que ya son PNG.
-                    const zipContent = await zipArchive.generateAsync({type:"blob", compression: "STORE"});
-                    
-                    // Disparo descaga
-                    const tempAnchor = document.createElement("a");
-                    tempAnchor.href = URL.createObjectURL(zipContent);
-                    tempAnchor.download = `Promocionales_Ahorro_QR_${Date.now()}.zip`;
-                    document.body.appendChild(tempAnchor);
-                    tempAnchor.click();
-                    document.body.removeChild(tempAnchor);
-
-                    uiStatus.style.color = '#10b981'; // Verde Sutil Éxito
-                    uiStatus.innerText = `¡Proceso concluido con éxito! Se obtuvieron ${totalElements} imágenes QR.`;
-                    
-                    // Recolección de basura asíncrona de la URL de objeto
-                    setTimeout(() => URL.revokeObjectURL(tempAnchor.href), 10000);
-
-                } catch (error) {
-                    console.error("Fallo crítico en subrutina Bulk:", error);
-                    uiStatus.style.color = brandColors.primary;
-                    uiStatus.innerText = "Error generando lote. Revisa la consola para más detalles.";
-                    alert("Se detuvo el procesamiento por un error crítico. Intenta con un rango menor.");
-                } finally {
-                    // Restauración de estado siempre, aún si falla
-                    btnBatch.disabled = false;
-                }
-            }
-        });
-    });
 });
 </script>
 </body>
