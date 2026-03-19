@@ -426,7 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
         data: "fahorro://", 
         margin: 10,
         qrOptions: { mode: "Byte", errorCorrectionLevel: "M" },
-        imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 0 },
         backgroundOptions: { color: brandColors.background },
         dotsOptions: { color: brandColors.secondary, type: "square" }, // Puntos azules
         cornersSquareOptions: { color: brandColors.primary, type: "square" }, // Bordes Rojos
@@ -440,9 +439,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicialización Retardada para evitar parpadeos
     const initQrEngines = () => {
         if (typeof QRCodeStyling !== "undefined") {
-            // Sólo inicializamos de entrada el de deeplink, porque waModal empieza en "display: none".
+            // QR Deeplink (App)
             qrPreviewInstance = new QRCodeStyling({ ...qrBaseSettings, width: 250, height: 250 });
             qrPreviewInstance.append(document.getElementById('qrDomContainer'));
+
+            // QR WhatsApp (wa.me) - Estilos con verde de WhatsApp
+            qrWaInstance = new QRCodeStyling({ 
+                ...qrBaseSettings, 
+                width: 250, height: 250,
+                dotsOptions: { color: "#128C7E", type: "square" },
+                cornersSquareOptions: { color: "#075E54", type: "square" },
+                cornersDotOptions: { color: "#25D366", type: "square" }
+            });
+            qrWaInstance.append(document.getElementById('qrWaDomContainer'));
         } else {
             console.error("Librería QRCodeStyling no disponible.");
             alert("Error cargando el motor de renderizado QR. Revisa tu conexión.");
@@ -563,24 +572,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * EVENTO: Generar WhatsApp QR
      */
     btnOpenWhatsApp.addEventListener('click', () => {
+        if (!qrWaInstance) return alert("Error cargando librería QR");
+        
         const idValue = inputID.value.trim();
         if (!idValue) {
             return alert("Por favor, ingresa un MultifuncionalID válido.");
         }
-
-        // Si es la primera vez que se abre, creamos la instancia para que calcule bien el tamaño
-        if (!qrWaInstance && typeof QRCodeStyling !== "undefined") {
-            qrWaInstance = new QRCodeStyling({ 
-                ...qrBaseSettings, 
-                width: 250, height: 250,
-                dotsOptions: { color: "#128C7E", type: "square" },
-                cornersSquareOptions: { color: "#075E54", type: "square" },
-                cornersDotOptions: { color: "#25D366", type: "square" }
-            });
-            qrWaInstance.append(document.getElementById('qrWaDomContainer'));
-        }
-
-        if (!qrWaInstance) return alert("Error cargando librería QR");
 
         const phone = "528007112222";
         const message = `Quiero conocer el Catálogo extendido, soy referido de ${idValue} quien me dio un cupón`;
