@@ -210,7 +210,7 @@
         /* Auto Scaling del lienzo QR */
         .qr-canvas-container canvas, .qr-canvas-container svg {
             width: 100% !important;
-            height: 100% !important;
+            height: auto !important;
             max-width: 250px;
             max-height: 250px;
             object-fit: contain;
@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const qrBaseSettings = {
-        type: "svg", 
+        type: "canvas", 
         data: "fahorro://", 
         margin: 10,
         qrOptions: { mode: "Byte", errorCorrectionLevel: "M" },
