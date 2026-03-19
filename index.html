@@ -291,6 +291,24 @@
         </form>
     </section>
 
+    <!-- SECTION 2: WhatsApp QR -->
+    <section class="card-surface" style="border-top-color: #25D366;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+            <!-- WhatsApp icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.42A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm-1.07 5.684c-.198-.442-.41-.451-.6-.459l-.51-.006c-.177 0-.465.066-.708.331-.244.265-.93.91-.93 2.22s.952 2.574 1.085 2.751c.133.177 1.854 2.948 4.562 4.015.637.275 1.134.44 1.521.563.639.204 1.22.175 1.68.106.513-.076 1.579-.644 1.801-1.267.222-.623.222-1.157.155-1.267-.066-.11-.244-.177-.51-.31-.266-.133-1.579-.778-1.823-.866-.244-.088-.421-.133-.598.133-.177.265-.686.866-.841 1.044-.155.177-.31.199-.576.066-.266-.133-1.123-.414-2.14-1.32-.79-.705-1.323-1.575-1.478-1.84-.155-.267-.017-.41.116-.542.12-.12.266-.31.399-.465.133-.155.177-.266.266-.443.089-.178.044-.333-.022-.465-.066-.133-.584-1.45-.809-1.979z" fill="#25D366"/></svg>
+            <h2 style="color: #075E54; font-size: 1.2rem; margin:0;">QR de WhatsApp</h2>
+        </div>
+        <p style="color:#6b7280; font-size:0.88rem; margin:0 0 20px 0;">Genera un código QR que abre WhatsApp directamente con un mensaje personalizado para Farmacias del Ahorro. Usa el mismo MultifuncionalID que ingresaste arriba.</p>
+
+        <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:14px; margin-bottom:20px; font-size:0.85rem; color:#166534;">
+            <strong>Mensaje que verá el cliente:</strong><br>
+            <em id="whatsappMsgPreview">"Quiero conocer el Catálogo extendido, soy referido de <strong>[tu ID]</strong> quien me dio un cupón"</em>
+        </div>
+
+        <button type="button" id="btnOpenWhatsApp" class="btn btn-primary" style="background:#25D366;" disabled>
+            Generar QR de WhatsApp
+        </button>
+    </section>
 
 </main>
 
@@ -309,6 +327,24 @@
         </div>
         
         <button type="button" id="btnDownloadSingle" class="btn btn-primary">
+            Descargar imagen
+        </button>
+    </div>
+</aside>
+
+<!-- MODAL WHATSAPP QR -->
+<aside class="modal" id="whatsappModal" aria-hidden="true" role="dialog" aria-labelledby="waModalTitle">
+    <div class="modal-content">
+        <button type="button" class="modal-btn-close" id="btnCloseWaModal" aria-label="Cerrar ventana">×</button>
+        <h3 id="waModalTitle" style="color: #075E54; margin-top: 0;">¡QR de WhatsApp listo!</h3>
+        
+        <div class="qr-canvas-container" id="qrWaDomContainer"></div>
+
+        <div class="url-feedback-box" id="textWaFeedback" style="font-size: 1rem; font-weight: 700; color: #075E54; letter-spacing: 0.03em;">
+            &mdash;
+        </div>
+        
+        <button type="button" id="btnDownloadWa" class="btn btn-primary" style="background:#25D366;">
             Descargar imagen
         </button>
     </div>
@@ -336,9 +372,24 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.setAttribute('aria-hidden', 'true');
     };
 
+    const waModal = document.getElementById('whatsappModal');
+    const openWaModal = () => {
+        waModal.classList.add('is-open');
+        waModal.setAttribute('aria-hidden', 'false');
+    };
+    const closeWaModal = () => {
+        waModal.classList.remove('is-open');
+        waModal.setAttribute('aria-hidden', 'true');
+    };
+
     btnCloseModal.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal(); // Cierra si hace clic fuera
+    });
+
+    document.getElementById('btnCloseWaModal').addEventListener('click', closeWaModal);
+    waModal.addEventListener('click', (e) => {
+        if (e.target === waModal) closeWaModal();
     });
 
     /** 
@@ -354,6 +405,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botones Acción Principal
     const btnPreview = document.getElementById('btnOpenPreview');
     const btnDownload = document.getElementById('btnDownloadSingle');
+
+    const btnOpenWhatsApp = document.getElementById('btnOpenWhatsApp');
+    const whatsappMsgPreview = document.getElementById('whatsappMsgPreview');
+    const btnDownloadWa = document.getElementById('btnDownloadWa');
+    const textWaFeedback = document.getElementById('textWaFeedback');
 
     /**
      * CONFIGURACIÓN E INSTANCIAS QR (Librería Externa)
@@ -377,12 +433,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cornersDotOptions: { color: brandColors.primary, type: "square" } // Centro rojo
     };
 
-    // Instancia para Modal
+    // Instancias para Modal
     let qrPreviewInstance = null;
+    let qrWaInstance = null;
 
     // Inicialización Retardada para evitar parpadeos
     const initQrEngines = () => {
         if (typeof QRCodeStyling !== "undefined") {
+            // Sólo inicializamos de entrada el de deeplink, porque waModal empieza en "display: none".
             qrPreviewInstance = new QRCodeStyling({ ...qrBaseSettings, width: 250, height: 250 });
             qrPreviewInstance.append(document.getElementById('qrDomContainer'));
         } else {
@@ -444,9 +502,19 @@ document.addEventListener('DOMContentLoaded', () => {
      * EVENTO: Validar UI y habilitar botones si Captcha y Datos son correctos
      */
     const validateTestUI = () => {
-        const isValidId = inputID.value.trim().length >= 3;
+        const idValue = inputID.value.trim();
+        const isValidId = idValue.length >= 3;
         const isValidCaptcha = parseInt(inputCaptchaTest.value, 10) === captchaAnswer;
+        
         btnPreview.disabled = !(isValidId && isValidCaptcha);
+        btnOpenWhatsApp.disabled = !(isValidId && isValidCaptcha);
+
+        // Actualizar preview del mensaje de whatsapp en tiempo real
+        if (isValidId) {
+            whatsappMsgPreview.innerHTML = `"Quiero conocer el Catálogo extendido, soy referido de <strong>${idValue}</strong> quien me dio un cupón"`;
+        } else {
+            whatsappMsgPreview.innerHTML = `"Quiero conocer el Catálogo extendido, soy referido de <strong>[tu ID]</strong> quien me dio un cupón"`;
+        }
     };
     
     inputID.addEventListener('input', validateTestUI);
@@ -487,6 +555,54 @@ document.addEventListener('DOMContentLoaded', () => {
             qrPreviewInstance.download({ name: safeFilename, extension: "png" });
         } catch (e) {
             alert("No se pudo exportar la imagen.");
+            console.error(e);
+        }
+    });
+
+    /**
+     * EVENTO: Generar WhatsApp QR
+     */
+    btnOpenWhatsApp.addEventListener('click', () => {
+        const idValue = inputID.value.trim();
+        if (!idValue) {
+            return alert("Por favor, ingresa un MultifuncionalID válido.");
+        }
+
+        // Si es la primera vez que se abre, creamos la instancia para que calcule bien el tamaño
+        if (!qrWaInstance && typeof QRCodeStyling !== "undefined") {
+            qrWaInstance = new QRCodeStyling({ 
+                ...qrBaseSettings, 
+                width: 250, height: 250,
+                dotsOptions: { color: "#128C7E", type: "square" },
+                cornersSquareOptions: { color: "#075E54", type: "square" },
+                cornersDotOptions: { color: "#25D366", type: "square" }
+            });
+            qrWaInstance.append(document.getElementById('qrWaDomContainer'));
+        }
+
+        if (!qrWaInstance) return alert("Error cargando librería QR");
+
+        const phone = "528007112222";
+        const message = `Quiero conocer el Catálogo extendido, soy referido de ${idValue} quien me dio un cupón`;
+        const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        
+        qrWaInstance.update({ data: waUrl });
+        textWaFeedback.innerText = `ID: ${idValue}`;
+        
+        openWaModal();
+    });
+
+    /**
+     * EVENTO: Descargar Prueba WhatsApp
+     */
+    btnDownloadWa.addEventListener('click', () => {
+        if (!qrWaInstance) return;
+        const idSafe = (inputID.value || 'Promo').replace(/[^a-zA-Z0-9]/g, '');
+        const safeFilename = `${idSafe}_WhatsApp_QR`;
+        
+        try {
+            qrWaInstance.download({ name: safeFilename, extension: "png" });
+        } catch (e) {
             console.error(e);
         }
     });
