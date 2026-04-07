@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnOpenWhatsApp.disabled = !valid;
 
         whatsappMsgPreview.innerHTML = id
-            ? `"Quiero conocer el Catálogo extendido, soy referido de <strong>${id}</strong> quien me dio un cupón"`
-            : `"Quiero conocer el Catálogo extendido, soy referido de <strong>[tu ID]</strong> quien me dio un cupón"`;
+            ? `"Quiero mi cupón de 20% de descuento, y conocer sobre los productos exclusivos en línea de Farmacias del Ahorro. <strong>${id}</strong>"`
+            : `"Quiero mi cupón de 20% de descuento, y conocer sobre los productos exclusivos en línea de Farmacias del Ahorro. <strong>[tu ID]</strong>"`;
     };
 
     inputNombre.addEventListener('input', validateUI);
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!id)     return alert('Por favor, ingresa un MultifuncionalID válido.');
         if (!nombre) return alert('Por favor, ingresa el Nombre del promotor.');
 
-        const msg = `Quiero conocer el Catálogo extendido, soy referido de ${id} quien me dio un cupón`;
+        const msg = `Quiero mi cupón de 20% de descuento, y conocer sobre los productos exclusivos en línea de Farmacias del Ahorro. ${id}`;
         currentWaUrl = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`;
 
         // Actualizar chips del gafete visual
